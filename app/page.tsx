@@ -133,7 +133,7 @@ const commuteOutfitItems: LookOutfitItem[] = [
   {
     id: "commute-pants",
     name: "黑色西裤",
-    image: "/images/item-pants.jpg",
+    image: "/images/item-black-pants.png",
     method: "常规",
   },
   {
@@ -160,13 +160,13 @@ const urbanOutfitItems: LookOutfitItem[] = [
   {
     id: "urban-pants",
     name: "黑色西裤",
-    image: "/images/item-pants.jpg",
+    image: "/images/item-black-pants.png",
     method: "高腰",
   },
   {
     id: "urban-shoes",
-    name: "黑色短靴",
-    image: "/images/item-boots.jpg",
+    name: "乐福鞋",
+    image: "/images/item-shoes-beige.jpg",
     method: "正常穿着",
   },
   {
@@ -186,14 +186,14 @@ const dailyOutfitItems: LookOutfitItem[] = [
   },
   {
     id: "daily-pants",
-    name: "白色长裤",
-    image: "/images/item-pants.jpg",
+    name: "黑色西裤",
+    image: "/images/item-black-pants.png",
     method: "高腰",
   },
   {
     id: "daily-shoes",
-    name: "小白鞋",
-    image: "/images/item-sneakers.jpg",
+    name: "乐福鞋",
+    image: "/images/item-shoes-beige.jpg",
     method: "正常穿着",
   },
   {
@@ -209,19 +209,19 @@ const halfTuckTutorial: TutorialStep[] = [
     id: "half-tuck-front",
     title: "将衬衫前摆塞入裤腰",
     body: "前侧衣摆轻塞，先确定腰线位置。",
-    image: "/images/wear-step-1-composed.jpg",
+    image: "/images/wear-step-1.jpg",
   },
   {
     id: "half-tuck-back",
     title: "后摆自然垂落",
     body: "后侧衣摆放松，避免整体过紧。",
-    image: "/images/wear-step-2-composed.jpg",
+    image: "/images/wear-step-2.jpg",
   },
   {
     id: "half-tuck-sleeve",
     title: "袖口卷起一圈",
     body: "露出手腕，增加上半身层次。",
-    image: "/images/wear-step-3-composed.jpg",
+    image: "/images/wear-step-3.jpg",
   },
 ];
 
@@ -230,19 +230,19 @@ const rolledSleeveTutorial: TutorialStep[] = [
     id: "rolled-sleeve-cuff",
     title: "解开袖口",
     body: "先将袖口展开，保留自然松量。",
-    image: "/images/wear-step-2-composed.jpg",
+    image: "/images/wear-step-2.jpg",
   },
   {
     id: "rolled-sleeve-fold",
     title: "向上卷起一圈",
     body: "卷至小臂位置，让比例更轻盈。",
-    image: "/images/wear-step-3-composed.jpg",
+    image: "/images/wear-step-3.jpg",
   },
   {
     id: "rolled-sleeve-tuck",
     title: "整理前侧衣摆",
     body: "轻塞前摆，保持上身利落。",
-    image: "/images/wear-step-1-composed.jpg",
+    image: "/images/wear-step-1.jpg",
   },
 ];
 
@@ -251,19 +251,19 @@ const tiedShirtTutorial: TutorialStep[] = [
     id: "tied-shirt-balance",
     title: "调整两侧衣摆",
     body: "让左右衣摆长度接近，方便打结。",
-    image: "/images/wear-step-2-composed.jpg",
+    image: "/images/wear-step-2.jpg",
   },
   {
     id: "tied-shirt-knot",
     title: "在腰线处轻系",
     body: "保持结点松弛，不要收得过紧。",
-    image: "/images/wear-step-1-composed.jpg",
+    image: "/images/wear-step-1.jpg",
   },
   {
     id: "tied-shirt-sleeve",
     title: "卷起袖口",
     body: "露出手腕，让整体更适合日常。",
-    image: "/images/wear-step-3-composed.jpg",
+    image: "/images/wear-step-3.jpg",
   },
 ];
 
@@ -300,15 +300,11 @@ const looks: Look[] = [
     image: "/images/look-daily-hd.png",
     detailImage: "/images/look-detail-hd.png",
     tryOnImage: "/images/try-on-hd.png",
-    note: "白衬衫自然系腰，搭配浅色长裤，适合周末和轻办公。",
+    note: "白衬衫自然系腰，搭配黑色西裤，适合周末和轻办公。",
     outfitItems: dailyOutfitItems,
     tutorialSteps: tiedShirtTutorial,
   },
 ];
-
-function isNoOuterwear(value: string) {
-  return /^(无|无需|不需要|不搭配)/.test(value.trim());
-}
 
 function buildAiLooks({
   result,
@@ -323,17 +319,13 @@ function buildAiLooks({
   scene: Scene;
   requestId: number;
 }): Look[] {
-  const tutorialImages = [
-    "/images/wear-step-1-composed.jpg",
-    "/images/wear-step-2-composed.jpg",
-    "/images/wear-step-3-composed.jpg",
-  ];
-
   return result.looks.map((plan, index) => {
     const visual = looks[index] ?? looks[0];
-    const finalItem = isNoOuterwear(plan.outerwear)
-      ? { name: plan.accessories, method: "点缀", image: "/images/item-bag.jpg" }
-      : { name: plan.outerwear, method: "外搭", image: "/images/item-blazer.jpg" };
+    const outfitItems = visual.outfitItems.map((item, itemIndex) => ({
+      ...item,
+      id: `ai-${requestId}-${index + 1}-item-${itemIndex + 1}`,
+      image: itemIndex === 0 ? garmentImage : item.image,
+    }));
 
     return {
       ...visual,
@@ -342,40 +334,10 @@ function buildAiLooks({
       scene,
       weather: `${Math.round(weather.temperatureC)}°C`,
       note: plan.weatherReason,
-      outfitItems: [
-        {
-          id: `ai-${requestId}-${index + 1}-garment`,
-          name: `${result.garment.color}${result.garment.category}`,
-          image: garmentImage,
-          method: plan.stylingSteps[0],
-        },
-        {
-          id: `ai-${requestId}-${index + 1}-bottoms`,
-          name: plan.bottoms,
-          image: "/images/item-pants.jpg",
-          method: plan.stylingSteps[1],
-        },
-        {
-          id: `ai-${requestId}-${index + 1}-shoes`,
-          name: plan.shoes,
-          image: "/images/item-shoes-beige.jpg",
-          method: "正常穿着",
-        },
-        {
-          id: `ai-${requestId}-${index + 1}-finishing`,
-          ...finalItem,
-        },
-      ],
-      tutorialSteps: plan.stylingSteps.map((step, stepIndex) => ({
+      outfitItems,
+      tutorialSteps: halfTuckTutorial.map((step, stepIndex) => ({
+        ...step,
         id: `ai-${requestId}-${index + 1}-step-${stepIndex + 1}`,
-        title: step,
-        body:
-          stepIndex === 0
-            ? "先确定上衣的穿法与腰线位置。"
-            : stepIndex === 1
-              ? "整理上下装比例，让轮廓保持利落。"
-              : "最后调整袖口、外套或配饰细节。",
-        image: tutorialImages[stepIndex],
       })),
       aiPlan: plan,
       garmentAnalysis: result.garment,
@@ -443,8 +405,8 @@ const wardrobeItems: WardrobeItem[] = [
   },
   {
     id: "pants",
-    name: "白色长裤",
-    image: "/images/item-pants.jpg",
+    name: "黑色西裤",
+    image: "/images/item-black-pants.png",
     method: "高腰",
     type: "裤装",
     recommendationLookId: "daily",
@@ -475,8 +437,8 @@ const wardrobeItems: WardrobeItem[] = [
   },
   {
     id: "sneakers",
-    name: "小白鞋",
-    image: "/images/item-sneakers.jpg",
+    name: "乐福鞋",
+    image: "/images/item-shoes-beige.jpg",
     method: "正常穿着",
     type: "鞋履",
     recommendationLookId: "daily",
@@ -491,8 +453,8 @@ const wardrobeItems: WardrobeItem[] = [
   },
   {
     id: "cream-pants",
-    name: "奶油色西裤",
-    image: "/images/item-pants.jpg",
+    name: "黑色西裤",
+    image: "/images/item-black-pants.png",
     method: "高腰",
     type: "裤装",
     recommendationLookId: "commute",
@@ -563,8 +525,8 @@ const wardrobeItems: WardrobeItem[] = [
   },
   {
     id: "white-sneaker",
-    name: "白色运动鞋",
-    image: "/images/item-sneakers.jpg",
+    name: "乐福鞋",
+    image: "/images/item-shoes-beige.jpg",
     method: "正常穿着",
     type: "鞋履",
     recommendationLookId: "daily",
@@ -670,6 +632,7 @@ const wardrobeHdImages: Record<string, string> = {
   "/images/item-bag.jpg": "/images/wardrobe-item-bag-display.png",
   "/images/item-dress.jpg": "/images/wardrobe-item-dress-display.png",
   "/images/item-pants.jpg": "/images/wardrobe-item-pants-display.png",
+  "/images/item-black-pants.png": "/images/item-black-pants.png",
   "/images/item-blackdress.jpg": "/images/wardrobe-item-blackdress-display.png",
   "/images/item-shoes-beige.jpg": "/images/wardrobe-item-shoes-display.png",
   "/images/item-boots.jpg": "/images/wardrobe-item-boots-display.png",
@@ -772,6 +735,7 @@ const maxUploadSize = 10 * 1024 * 1024;
 const analysisTransitionDelay = 700;
 const forceDemoAnalysisError = false;
 const forceDemoGenerationError = false;
+const enableLiveImageGeneration = false;
 const profileSaveDelay = 650;
 const profileSavedHoldDelay = 400;
 const tryOnRegenerationDelay = 2200;
@@ -1508,77 +1472,84 @@ export default function Home() {
       return;
     }
 
-    setFirstLookImageFlow({ status: "generating", lookId: firstLook.id });
+    let displayLooks = nextLooks;
+    let imageModel = "demo-static";
 
-    let imagePayload: GenerateLookImageResponse;
-    try {
-      imagePayload = await requestFirstLookImage({
-        image,
-        lookId: firstLook.id,
-        plan: firstPlan,
-        result: payload.result,
-        signal: controller.signal,
-      });
-    } catch {
+    if (enableLiveImageGeneration) {
+      setFirstLookImageFlow({ status: "generating", lookId: firstLook.id });
+
+      let imagePayload: GenerateLookImageResponse;
+      try {
+        imagePayload = await requestFirstLookImage({
+          image,
+          lookId: firstLook.id,
+          plan: firstPlan,
+          result: payload.result,
+          signal: controller.signal,
+        });
+      } catch {
+        if (
+          controller.signal.aborted ||
+          uploadOperationIdRef.current !== operationId
+        ) {
+          return;
+        }
+        clearUploadTimers();
+        setFirstLookImageFlow({
+          status: "error",
+          lookId: firstLook.id,
+          message: "图片生成请求中断，请重新生成。",
+        });
+        updateUploadFlow(
+          generationErrorCopy(
+            "generation",
+            "图片生成请求中断，请重新生成。",
+          ),
+        );
+        return;
+      }
+
       if (
         controller.signal.aborted ||
         uploadOperationIdRef.current !== operationId
       ) {
         return;
       }
-      clearUploadTimers();
-      setFirstLookImageFlow({
-        status: "error",
-        lookId: firstLook.id,
-        message: "图片生成请求中断，请重新生成。",
-      });
-      updateUploadFlow(
-        generationErrorCopy(
-          "generation",
-          "图片生成请求中断，请重新生成。",
-        ),
-      );
-      return;
+
+      if (!imagePayload.ok) {
+        clearUploadTimers();
+        const detail = [
+          imagePayload.error.apiStatus
+            ? `状态码 ${imagePayload.error.apiStatus}`
+            : "",
+          imagePayload.error.openAiType,
+          imagePayload.error.openAiCode,
+        ]
+          .filter(Boolean)
+          .join(" / ");
+        const message = detail
+          ? `${imagePayload.error.message}（${detail}）`
+          : imagePayload.error.message;
+
+        setFirstLookImageFlow({
+          status: "error",
+          lookId: firstLook.id,
+          message,
+        });
+        updateUploadFlow(generationErrorCopy("generation", message));
+        return;
+      }
+
+      displayLooks = [
+        {
+          ...firstLook,
+          image: imagePayload.image.src,
+        },
+        ...nextLooks.slice(1),
+      ];
+      imageModel = imagePayload.image.model;
     }
 
-    if (
-      controller.signal.aborted ||
-      uploadOperationIdRef.current !== operationId
-    ) {
-      return;
-    }
-
-    if (!imagePayload.ok) {
-      clearUploadTimers();
-      const detail = [
-        imagePayload.error.apiStatus
-          ? `状态码 ${imagePayload.error.apiStatus}`
-          : "",
-        imagePayload.error.openAiType,
-        imagePayload.error.openAiCode,
-      ]
-        .filter(Boolean)
-        .join(" / ");
-      const message = detail
-        ? `${imagePayload.error.message}（${detail}）`
-        : imagePayload.error.message;
-
-      setFirstLookImageFlow({
-        status: "error",
-        lookId: firstLook.id,
-        message,
-      });
-      updateUploadFlow(generationErrorCopy("generation", message));
-      return;
-    }
-
-    const liveImageLooks = [
-      {
-        ...firstLook,
-        image: imagePayload.image.src,
-      },
-      ...nextLooks.slice(1),
-    ];
     const identifiedGarment = {
       ...garment,
       name: `${payload.result.garment.color}${payload.result.garment.category}`,
@@ -1590,13 +1561,13 @@ export default function Home() {
       updateCurrentGarment(identifiedGarment);
       setRecommendationGarment(identifiedGarment);
       setGenerationResult(payload.result);
-      setRecommendedLooks(liveImageLooks);
-      setSelectedLook(liveImageLooks[0]);
+      setRecommendedLooks(displayLooks);
+      setSelectedLook(displayLooks[0]);
       setHasGeneratedAiResults(true);
       setFirstLookImageFlow({
         status: "success",
         lookId: firstLook.id,
-        model: imagePayload.image.model,
+        model: imageModel,
       });
       updateUploadFlow({ status: "success" });
     };
@@ -2302,7 +2273,9 @@ function Recommend({
   const heading = isGenerating
     ? "正在生成 3 套 Look"
     : generationError
-      ? "上次结果仍可查看"
+      ? showPreviousResults
+        ? "上次结果仍可查看"
+        : "这次没有生成完成"
       : isGenerated
         ? "已生成 3 套 Look"
         : "准备生成新的 Look";
@@ -2317,7 +2290,9 @@ function Recommend({
               ? imageGenerationLabel ||
                 `正在围绕「${garment.name}」尝试不同穿法与搭配。`
               : generationError
-                ? `「${garment.name}」仍然保留，本次失败不会覆盖上一份结果。`
+                ? showPreviousResults
+                  ? `「${garment.name}」仍然保留，本次失败不会覆盖上一份结果。`
+                  : `「${garment.name}」仍然保留，可以重新生成或更换图片。`
                 : isGenerated
                   ? `以下方案均围绕「${garment.name}」生成。`
                   : `「${garment.name}」已保留，确认上传后即可重新生成。`
@@ -2485,13 +2460,14 @@ function OutfitList({ items }: { items: LookOutfitItem[] }) {
 }
 
 function TutorialList({ steps }: { steps: TutorialStep[] }) {
+  const withPeriod = (text: string) => (/[。.!?？]$/.test(text) ? text : `${text}。`);
+
   return (
     <div className="tutorial-grid">
       {steps.map((step) => (
         <article className="tutorial-card" key={step.id}>
           <img src={step.image} alt={step.title} />
-          <strong>{step.title}</strong>
-          <p>{step.body}</p>
+          <p>{withPeriod(step.title)}</p>
         </article>
       ))}
     </div>
@@ -2586,23 +2562,6 @@ function TryOn({
             </p>
           )}
         </div>
-        <button
-          className="primary-btn wide"
-          type="button"
-          onClick={onSave}
-          disabled={!canSave}
-          aria-describedby={failed ? "tryon-save-reason" : undefined}
-        >
-          保存穿搭
-        </button>
-        <p
-          className={failed ? "tryon-save-note visible" : "tryon-save-note"}
-          id="tryon-save-reason"
-        >
-          {failed
-            ? "当前显示的是上一次试穿结果，重新生成后即可保存。"
-            : ""}
-        </p>
         {failed ? (
           <div className="tryon-error-actions">
             <button className="primary-btn" type="button" onClick={onRetry}>
@@ -2622,6 +2581,23 @@ function TryOn({
             {profileComplete ? "更新我的形象" : "完善我的形象"}
           </button>
         )}
+        <button
+          className="primary-btn wide"
+          type="button"
+          onClick={onSave}
+          disabled={!canSave}
+          aria-describedby={failed ? "tryon-save-reason" : undefined}
+        >
+          保存穿搭
+        </button>
+        <p
+          className={failed ? "tryon-save-note visible" : "tryon-save-note"}
+          id="tryon-save-reason"
+        >
+          {failed
+            ? "当前显示的是上一次试穿结果，重新生成后即可保存。"
+            : ""}
+        </p>
         <button className="text-btn" type="button" onClick={onBack}>
           返回 Look
         </button>
