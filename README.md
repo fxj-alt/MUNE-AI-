@@ -42,10 +42,10 @@ pnpm install
 pnpm run dev
 ```
 
-本地预览地址：
+demo 浏览地址：
 
 ```bash
-http://127.0.0.1:3000
+[http://127.0.0.1:3000](https://mune-ai-demo.vercel.app/)
 ```
 
 ## 演示路径
