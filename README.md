@@ -45,7 +45,7 @@ pnpm run dev
 demo 浏览地址：
 
 ```bash
-[本地地址：http://127.0.0.1:3000]
+本地地址：http://127.0.0.1:3000
 demo浏览地址：https://mune-ai-demo.vercel.app/
 ```
 
